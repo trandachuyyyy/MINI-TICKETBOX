@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: ticketbox-mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: ticketbox-backend
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      PORT: 3001
+      # MONGODB_URI: mongodb://mongo:27017/ticketbox
+      MONGODB_URI: mongodb+srv://ticketbox:ticketbox@ticketbox.lkbr3yq.mongodb.net/?appName=ticketbox
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - '3001:3001'
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3001
+        # NEXT_PUBLIC_API_URL: http://192.168.2.3:3001
+    container_name: ticketbox-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - '3000:3000'
+
+volumes:
+  mongo-data:
