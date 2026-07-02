@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   GoneException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -15,15 +16,19 @@ import {
 } from './schemas/reservation.schema';
 import { CreateTicketTypeDto } from './dto/create-ticket-type.dto';
 import { EventsGateway } from '../events/events.gateway';
+import { MailService } from '../common/services/mail.service';
 
 export const HOLD_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 
 @Injectable()
 export class TicketsService {
+  private readonly logger = new Logger(TicketsService.name);
+
   constructor(
     @InjectModel(TicketType.name) private ticketTypeModel: Model<TicketTypeDocument>,
     @InjectModel(Reservation.name) private reservationModel: Model<ReservationDocument>,
     private readonly events: EventsGateway,
+    private readonly mailService: MailService,
   ) {}
 
   async create(dto: CreateTicketTypeDto) {
@@ -161,6 +166,19 @@ export class TicketsService {
     );
 
     await this.broadcastInventory();
+
+    const recipientEmail = customer.customerEmail || reservation.customerEmail;
+    if (recipientEmail) {
+      this.logger.log(`Attempting to send payment confirmation email to ${recipientEmail}`);
+      await this.mailService.sendPaymentSuccessEmail(
+        recipientEmail,
+        reservation._id.toString(),
+        customer.customerName || reservation.customerName || 'khách hàng',
+      );
+    } else {
+      this.logger.warn('No customer email found for payment confirmation email.');
+    }
+
     return reservation;
   }
 

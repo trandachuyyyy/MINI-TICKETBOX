@@ -70,6 +70,8 @@ export const api = {
   keycancel:"cancel",
   keyadminStats:"adminStats",
   keyadminHolds:"adminHolds",
+  keyrequestOtp:"requestOtp",
+  keyverifyOtp:"verifyOtp",
   listTicketTypes: () => request<TicketTypeDto[]>('/tickets'),
   getTicketType: (id: string) => request<TicketTypeDto>(`/tickets/${id}`),
   hold: (ticketTypeId: string, quantity: number, clientId: string) =>
@@ -90,6 +92,16 @@ export const api = {
   cancel: (id: string, clientId: string) =>
     request<ReservationDto>(`/tickets/reservations/${id}?clientId=${encodeURIComponent(clientId)}`, {
       method: 'DELETE',
+    }),
+  requestOtp: (email: string) =>
+    request<{ ok: boolean; message: string; debugCode?: string }>(`/auth/otp/request`, {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+  verifyOtp: (email: string, code: string) =>
+    request<{ ok: boolean; message: string; sessionToken?: string; userId?: string }>(`/auth/otp/verify`, {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
     }),
   adminStats: () =>
     request<{

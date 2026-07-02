@@ -5,6 +5,7 @@ import { TicketsController } from './tickets.controller';
 import { TicketType, TicketTypeSchema } from './schemas/ticket-type.schema';
 import { Reservation, ReservationSchema } from './schemas/reservation.schema';
 import { EventsModule } from '../events/events.module';
+import { MailService } from '../common/services/mail.service';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { EventsModule } from '../events/events.module';
     EventsModule,
   ],
   controllers: [TicketsController],
-  providers: [TicketsService],
+  providers: [TicketsService, MailService],
   exports: [TicketsService],
 })
 export class TicketsModule {}

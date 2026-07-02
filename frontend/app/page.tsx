@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, TicketTypeDto } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
@@ -10,10 +11,20 @@ import { useTicketTypes } from "@/hooks/useTicketTypes";
 
 export default function HomePage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [live, setLive] = useState(false);
   const { data: types = [], isLoading, error } = useTicketTypes();
 
   useEffect(() => {
+    const sessionToken =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem("ticketbox_session")
+        : null;
+    if (!sessionToken) {
+      router.replace("/auth");
+      return;
+    }
+
     const socket = getSocket();
     const syncConnectionState = () => {
       if (socket.disconnected) {

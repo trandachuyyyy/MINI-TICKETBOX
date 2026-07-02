@@ -105,6 +105,9 @@ Cơ chế tương tự được áp dụng cho:
   - Hết giờ giữ vé khi đang điền form thanh toán (`HOLD_EXPIRED`) → khoá form, hướng dẫn quay lại chọn vé khác, vì vé đã chắc chắn được trả lại kho.
 - **Cập nhật tồn kho real-time**: trang chủ, trang giữ vé và admin dashboard đều kết nối Socket.IO. Mỗi lần có người giữ/huỷ/thanh toán vé, backend broadcast snapshot mới tới mọi client đang mở — không cần F5. Admin dùng realtime làm nguồn cập nhật chính; khi socket không ổn, dashboard có fallback polling nhẹ 8 giây để tránh dữ liệu bị cũ. Giao diện có badge trạng thái kết nối và tự đổi thành “ĐANG KẾT NỐI...” khi socket ngắt hoặc chưa kết nối, đồng thời cập nhật ngay khi hold mới/hold hết hạn.
 - **Throttle ở tầng API** (`@nestjs/throttler`): giới hạn riêng cho endpoint `hold` (5 request/giây/IP) ngoài giới hạn chung toàn hệ thống, để một client lỗi/spam không thể tự DOS chính kho vé.
+- **Email xác nhận sau thanh toán**: khi một reservation chuyển sang `CONFIRMED`, backend sẽ thử gửi email xác nhận tới địa chỉ khách hàng nếu SMTP đã được cấu hình trong `.env`; nếu chưa cấu hình, hệ thống vẫn chạy bình thường và bỏ qua bước gửi mail.
+- **Kiểm tra mail thật**: có thể gọi endpoint `GET /tickets/mail/test?to=your_email@gmail.com` để xác nhận SMTP đang hoạt động. Nếu trả về `ok: true`, nghĩa là mail đã gửi thành công (hoặc SMTP đã kết nối được); nếu `ok: false`, backend sẽ trả lời rõ lý do để bạn sửa cấu hình.
+- **Xác thực người dùng bằng OTP (luồng nhẹ)**: hệ thống hiện có một luồng đăng nhập đơn giản bằng email + OTP, dùng để thay thế `clientId` ẩn danh trong demo. Sau khi nhập email, hệ thống sẽ tạo một mã OTP và hiển thị mã đó trực tiếp trên màn hình nếu SMTP chưa được cấu hình; nếu SMTP đã cấu hình, mã sẽ được gửi tới email. Người dùng nhập mã OTP để xác thực và được lưu session vào `localStorage`. Đây là bước chuyển tiếp phù hợp trước khi nâng lên auth thật (JWT/session server-side).
 
 ### 2.4. Bài toán 3 — Chất lượng mã nguồn
 
@@ -139,5 +142,5 @@ ticketbox/
 ## 4. Giới hạn đã biết / hướng mở rộng nếu có thêm thời gian
 
 - Thanh toán hiện là giả lập (gọi API confirm = coi như thành công), chưa tích hợp cổng thanh toán thật.
-- Chưa có xác thực người dùng (đang dùng `clientId` ẩn danh lưu ở `localStorage`) — phù hợp với scope đề bài, nhưng hệ thống thật cần thêm login/OTP.
+- Chưa có xác thực người dùng thật hoàn chỉnh (hiện đang dùng session nhẹ bằng OTP + `localStorage` trong demo), phù hợp với scope đề bài nhưng hệ thống thật cần nâng lên login/OTP chuẩn, session server-side và gắn user vào reservation thay vì dùng `clientId` ẩn danh.
 - Có thể bổ sung Redis + BullMQ thay cho cron 10s nếu cần độ chính xác nhả vé ở mức dưới giây, hoặc cần scale backend ra nhiều instance (hiện tại nhiều instance NestJS vẫn an toàn vì tính atomic nằm ở tầng MongoDB, không ở bộ nhớ trong process).

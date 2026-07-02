@@ -6,6 +6,7 @@ import { TicketsService } from './tickets.service';
 import { TicketType, TicketTypeSchema } from './schemas/ticket-type.schema';
 import { Reservation, ReservationSchema } from './schemas/reservation.schema';
 import { EventsGateway } from '../events/events.gateway';
+import { MailService } from '../common/services/mail.service';
 
 /**
  * This test simulates the exact scenario the assignment cares about most:
@@ -30,6 +31,7 @@ describe('TicketsService - concurrency', () => {
       providers: [
         TicketsService,
         { provide: EventsGateway, useValue: { broadcastInventory: jest.fn() } },
+        { provide: MailService, useValue: { sendPaymentSuccessEmail: jest.fn() } },
         { provide: getModelToken(TicketType.name), useValue: connection.model(TicketType.name, TicketTypeSchema) },
         { provide: getModelToken(Reservation.name), useValue: connection.model(Reservation.name, ReservationSchema) },
       ],

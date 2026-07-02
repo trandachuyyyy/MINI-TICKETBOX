@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import { MailService } from '../common/services/mail.service';
 import { Throttle } from '@nestjs/throttler';
 import { TicketsService } from './tickets.service';
 import { HoldTicketDto } from './dto/hold-ticket.dto';
@@ -7,7 +8,10 @@ import { CreateTicketTypeDto } from './dto/create-ticket-type.dto';
 
 @Controller('tickets')
 export class TicketsController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly mailService: MailService,
+  ) {}
 
   @Post()
   create(@Body() dto: CreateTicketTypeDto) {
@@ -35,6 +39,14 @@ export class TicketsController {
   @Get('reservations/:id')
   getReservation(@Param('id') id: string, @Query('clientId') clientId: string) {
     return this.ticketsService.getReservation(id, clientId);
+  }
+
+  @Get('mail/test')
+  async testMail(@Query('to') to: string) {
+    if (!to) {
+      return this.mailService.testConnection();
+    }
+    return this.mailService.sendPaymentSuccessEmail(to, 'TEST-RESERVATION', 'Test User');
   }
 
   @Post('reservations/:id/confirm')
