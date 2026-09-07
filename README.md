@@ -142,5 +142,5 @@ ticketbox/
 ## 4. Giới hạn đã biết / hướng mở rộng nếu có thêm thời gian
 
 - Thanh toán hiện là giả lập (gọi API confirm = coi như thành công), chưa tích hợp cổng thanh toán thật.
-- Chưa có xác thực người dùng thật hoàn chỉnh (hiện đang dùng session nhẹ bằng OTP + `localStorage` trong demo), phù hợp với scope đề bài nhưng hệ thống thật cần nâng lên login/OTP chuẩn, session server-side và gắn user vào reservation thay vì dùng `clientId` ẩn danh.
+- Chưa có xác thực người dùng thật hoàn chỉnh (hiện đang dùng session nhẹ bằng OTP + `localStorage` trong demo), phù hợp với scope nhưng hệ thống thật cần nâng lên login/OTP chuẩn, session server-side và gắn user vào reservation thay vì dùng `clientId` ẩn danh.
 - Có thể bổ sung Redis + BullMQ thay cho cron 10s nếu cần độ chính xác nhả vé ở mức dưới giây, hoặc cần scale backend ra nhiều instance (hiện tại nhiều instance NestJS vẫn an toàn vì tính atomic nằm ở tầng MongoDB, không ở bộ nhớ trong process).
